@@ -1,0 +1,106 @@
+{
+  "result": "passed",
+  "source": "Original Steam SC3 CLRFLG",
+  "scriptId": 10,
+  "bookkeepingOps": {
+    "baseFlagSetAtPC": 57,
+    "extraFlagSetAtPC": 59
+  },
+  "endingTable": [
+    7,
+    -1,
+    -1,
+    188,
+    1,
+    13,
+    -1,
+    -1,
+    189,
+    1,
+    14,
+    -1,
+    -1,
+    190,
+    1,
+    11,
+    -1,
+    -1,
+    -1,
+    1,
+    12,
+    -1,
+    -1,
+    -1,
+    0,
+    15,
+    11,
+    804,
+    191,
+    1
+  ],
+  "rows": [
+    {
+      "ending": 0,
+      "sourceEntryLabel": 7,
+      "awards": [
+        0
+      ],
+      "flags": [
+        801
+      ]
+    },
+    {
+      "ending": 1,
+      "sourceEntryLabel": 8,
+      "awards": [
+        1
+      ],
+      "flags": [
+        802
+      ]
+    },
+    {
+      "ending": 2,
+      "sourceEntryLabel": 9,
+      "awards": [
+        2
+      ],
+      "flags": [
+        803
+      ]
+    },
+    {
+      "ending": 3,
+      "sourceEntryLabel": 10,
+      "awards": [
+        3
+      ],
+      "flags": [
+        804
+      ]
+    },
+    {
+      "ending": 4,
+      "sourceEntryLabel": 11,
+      "awards": [
+        4
+      ],
+      "flags": [
+        805
+      ]
+    },
+    {
+      "ending": 5,
+      "sourceEntryLabel": 12,
+      "awards": [
+        3,
+        5
+      ],
+      "flags": [
+        804,
+        806
+      ]
+    }
+  ],
+  "notes": "Ending 5 sets F806 and additional F804; record both ending IDs 5 and 3. Not a chapter-title heuristic."
+}

@@ -1,0 +1,244 @@
+{
+  "result": "prepared",
+  "sourceBytes": 21251338,
+  "bytesBeforeR1": 24796834,
+  "allPayloadBytesUnchanged": true,
+  "storedFiles": 2723,
+  "deflatedFiles": 45,
+  "storedBinaryIncludes": [
+    "PNG",
+    "JPEG",
+    "WAV",
+    "MP3",
+    "TTF"
+  ],
+  "deflatedEntries": [
+    {
+      "name": "app.js",
+      "bytes": 7426,
+      "compressed": 1496
+    },
+    {
+      "name": "pages/index/index.js",
+      "bytes": 250478,
+      "compressed": 45367
+    },
+    {
+      "name": "common/gallery.txt",
+      "bytes": 7018,
+      "compressed": 1061
+    },
+    {
+      "name": "common/graph.txt",
+      "bytes": 204628,
+      "compressed": 11795
+    },
+    {
+      "name": "common/reply/1-144-5376-0.txt",
+      "bytes": 4956,
+      "compressed": 354
+    },
+    {
+      "name": "common/story/1/32.txt",
+      "bytes": 6818,
+      "compressed": 2006
+    },
+    {
+      "name": "common/story/1/33.txt",
+      "bytes": 7067,
+      "compressed": 1822
+    },
+    {
+      "name": "common/story/1/34.txt",
+      "bytes": 6380,
+      "compressed": 1780
+    },
+    {
+      "name": "common/story/1/35.txt",
+      "bytes": 6658,
+      "compressed": 1900
+    },
+    {
+      "name": "common/story/1/5.txt",
+      "bytes": 6962,
+      "compressed": 1884
+    },
+    {
+      "name": "common/story/1/6.txt",
+      "bytes": 7218,
+      "compressed": 1843
+    },
+    {
+      "name": "common/story/1/7.txt",
+      "bytes": 6260,
+      "compressed": 1738
+    },
+    {
+      "name": "common/story/1/8.txt",
+      "bytes": 6577,
+      "compressed": 1944
+    },
+    {
+      "name": "common/story/10/32.txt",
+      "bytes": 6594,
+      "compressed": 1861
+    },
+    {
+      "name": "common/story/10/33.txt",
+      "bytes": 7938,
+      "compressed": 1828
+    },
+    {
+      "name": "common/story/10/34.txt",
+      "bytes": 6544,
+      "compressed": 1924
+    },
+    {
+      "name": "common/story/10/9.txt",
+      "bytes": 6512,
+      "compressed": 2123
+    },
+    {
+      "name": "common/story/12/2.txt",
+      "bytes": 6184,
+      "compressed": 1764
+    },
+    {
+      "name": "common/story/14/16.txt",
+      "bytes": 6005,
+      "compressed": 1622
+    },
+    {
+      "name": "common/story/14/17.txt",
+      "bytes": 6453,
+      "compressed": 1809
+    },
+    {
+      "name": "common/story/14/18.txt",
+      "bytes": 6871,
+      "compressed": 1398
+    },
+    {
+      "name": "common/story/14/23.txt",
+      "bytes": 6182,
+      "compressed": 1518
+    },
+    {
+      "name": "common/story/14/24.txt",
+      "bytes": 6116,
+      "compressed": 1650
+    },
+    {
+      "name": "common/story/15/11.txt",
+      "bytes": 6321,
+      "compressed": 1862
+    },
+    {
+      "name": "common/story/15/24.txt",
+      "bytes": 5672,
+      "compressed": 1151
+    },
+    {
+      "name": "common/story/15/30.txt",
+      "bytes": 6105,
+      "compressed": 1641
+    },
+    {
+      "name": "common/story/15/37.txt",
+      "bytes": 5936,
+      "compressed": 1544
+    },
+    {
+      "name": "common/story/15/8.txt",
+      "bytes": 6069,
+      "compressed": 1629
+    },
+    {
+      "name": "common/story/16/32.txt",
+      "bytes": 6458,
+      "compressed": 2011
+    },
+    {
+      "name": "common/story/18/1.txt",
+      "bytes": 6043,
+      "compressed": 1585
+    },
+    {
+      "name": "common/story/19/23.txt",
+      "bytes": 6583,
+      "compressed": 2063
+    },
+    {
+      "name": "common/story/20/2.txt",
+      "bytes": 6555,
+      "compressed": 2082
+    },
+    {
+      "name": "common/story/20/38.txt",
+      "bytes": 6522,
+      "compressed": 2039
+    },
+    {
+      "name": "common/story/4/32.txt",
+      "bytes": 6863,
+      "compressed": 1858
+    },
+    {
+      "name": "common/story/5/12.txt",
+      "bytes": 6804,
+      "compressed": 1750
+    },
+    {
+      "name": "common/story/5/36.txt",
+      "bytes": 6706,
+      "compressed": 2095
+    },
+    {
+      "name": "common/story/5/37.txt",
+      "bytes": 6262,
+      "compressed": 1687
+    },
+    {
+      "name": "common/story/5/6.txt",
+      "bytes": 6228,
+      "compressed": 1650
+    },
+    {
+      "name": "common/story/5/9.txt",
+      "bytes": 6880,
+      "compressed": 1834
+    },
+    {
+      "name": "common/story/6/31.txt",
+      "bytes": 6142,
+      "compressed": 1779
+    },
+    {
+      "name": "common/story/7/1.txt",
+      "bytes": 5877,
+      "compressed": 1515
+    },
+    {
+      "name": "common/story/7/32.txt",
+      "bytes": 6212,
+      "compressed": 1859
+    },
+    {
+      "name": "common/story/8/13.txt",
+      "bytes": 6066,
+      "compressed": 1661
+    },
+    {
+      "name": "common/story/8/18.txt",
+      "bytes": 6208,
+      "compressed": 1838
+    },
+    {
+      "name": "common/story/8/4.txt",
+      "bytes": 6474,
+      "compressed": 1663
+    }
+  ],
+  "largestDeflatedBytes": 250478,
+  "firmwareHeapNotMeasured": true
+}

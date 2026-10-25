@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "results": [
+    {
+      "route": "TA",
+      "frames": 9358,
+      "ending": 1
+    },
+    {
+      "route": "RMG",
+      "frames": 10845,
+      "ending": 2
+    },
+    {
+      "route": "PR",
+      "frames": 12047,
+      "ending": 0
+    },
+    {
+      "route": "GS",
+      "frames": 9524,
+      "ending": 4
+    },
+    {
+      "route": "VA",
+      "frames": 11306,
+      "ending": 3
+    },
+    {
+      "route": "TRUE",
+      "frames": 11494,
+      "ending": 5
+    }
+  ],
+  "criticalDecisions": 11,
+  "rineReplyFixtures": 35,
+  "saveRestoresDuringRoutes": true,
+  "originalVMOnWatch": false
+}

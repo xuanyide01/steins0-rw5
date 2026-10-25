@@ -1,0 +1,12 @@
+{
+  "version": "0.2.1",
+  "device": "REDMI Watch 5",
+  "date": "2026-10-25",
+  "source": "maintainer feedback in this conversation",
+  "originalFeedback": "测试通过，上传github\n输出标题界面的动态和静态截图",
+  "physicalDeviceTested": true,
+  "packageSha256": "3219a24ea1133baa17e18ce3ec3ac1094be88ccd6f6112ad9535439b27974904",
+  "firmwareVersion": null,
+  "testDuration": null,
+  "scope": "Maintenance feedback after the clear-record fix; not an exhaustive test of every line or firmware."
+}

@@ -1,0 +1,10 @@
+{
+  "result": "passed",
+  "choiceWindowsExercised": 105,
+  "readAndUnreadExpirations": 35,
+  "selectedOutgoingTextAndStickerRecorded": true,
+  "originalFollowupSequenceAndOrder": true,
+  "originalExpirationPreserved": true,
+  "noDuplicateFallbackAfterReply": true,
+  "mailboxUnreadAndCounts": true
+}

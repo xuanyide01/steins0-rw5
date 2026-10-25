@@ -1,0 +1,79 @@
+const fs=require('fs'),path=require('path'),assert=require('assert/strict');
+const R=path.resolve(__dirname,'..'),src=path.join(R,'src'),root=path.join(src,'pages/index/index.ux');
+const modules=new Map(),timers=new Map(),store=new Map(),logs=[],reads=[];let nextTimer=0,now=0,delayReads=false,pending=[];
+const schedule=(fn,ms,repeat)=>{timers.set(++nextTimer,{fn,ms,at:now+ms,repeat});return nextTimer;};
+const clear=id=>timers.delete(id);
+function tick(ms){const end=now+ms;for(let guard=0;guard<10000;guard++){const entry=[...timers].filter(([,t])=>t.at<=end).sort((a,b)=>a[1].at-b[1].at)[0];if(!entry)break;const [id,t]=entry;now=t.at;if(t.repeat)t.at+=t.ms;else timers.delete(id);t.fn();if(guard===9999)throw Error('Timer guard');}now=end;}
+const FakeDate=class extends Date{static now(){return now;}};
+const globals={setTimeout:(fn,ms)=>schedule(fn,ms,false),clearTimeout:clear,setInterval:(fn,ms)=>schedule(fn,ms,true),clearInterval:clear,Date:FakeDate,console:{log:(...x)=>logs.push(x.join(' ')),error:(...x)=>logs.push(x.join(' '))}};
+const system={
+ '@system.file':{readText(o){reads.push(o.uri);const work=()=>{try{o.success({text:fs.readFileSync(path.join(src,o.uri),'utf8')});}catch(e){if(o.fail)o.fail(e.message,1);}if(o.complete)o.complete();};if(delayReads)pending.push(work);else work();}},
+ '@system.storage':{get(o){o.success(store.get(o.key)||'');},set(o){store.set(o.key,o.value);if(o.success)o.success();}},
+ '@system.audio':{play(){if(this.onplay)this.onplay();},stop(){if(this.onstop)this.onstop();}},
+ '@system.prompt':{showToast(){}}
+};
+function load(file){
+ file=path.resolve(file);if(modules.has(file))return modules.get(file);let source=fs.readFileSync(file,'utf8');if(file.endsWith('.ux'))source=source.split('<script>')[1].split('</script>')[0];const params={...globals};
+ source=source.replace(/^import\s+(.*?)\s+from\s+['"]([^'"]+)['"];?\r?$/gm,(_,spec,ref)=>{const dep=ref.startsWith('@system.')?system[ref]:load(path.resolve(path.dirname(file),ref));if(spec.startsWith('{')){for(const name of spec.slice(1,-1).split(',').map(x=>x.trim()).filter(Boolean))params[name]=dep[name];}else params[spec.trim()]=dep;return '';});
+ let tail;if(file.endsWith('.ux')){source=source.replace('export default','const definition=');tail='return definition;';}else{const names=[...source.matchAll(/export (?:const|function) (\w+)/g)].map(x=>x[1]);source=source.replace(/export /g,'');tail='return {'+names.join(',')+'};';}
+ const result=Function(...Object.keys(params),source+'\n'+tail)(...Object.values(params));modules.set(file,result);return result;
+}
+const d=load(root),ui=Object.assign({},JSON.parse(JSON.stringify(d.private)),d),e=load(path.join(src,'common/engine.js')),text=load(path.join(src,'common/text-font.js')),presentation=load(path.join(src,'common/presentation.js'));
+ui.$element=()=>({scrollTo(){}});store.set('steins0_rw5_config',JSON.stringify({font:26,textSpeed:0,sound:false,animation:false}));ui.onInit();
+assert.equal(ui.fontSize,28);assert.equal(ui._settings.textMode,'instant');
+ui.openConfig();assert.ok(ui.actions.some(x=>x.text==='字号：大'));ui.toggleFont();assert.equal(ui.fontSize,22);assert.ok(ui.actions.some(x=>x.text==='字号：小'));ui.toggleFont();assert.equal(ui.fontSize,24);assert.ok(ui.actions.some(x=>x.text==='字号：中'));
+assert.deepEqual(presentation.sentenceStops('第一句。第二句！\n第三句？'),[4,9,13]);
+assert.equal(text.cleanText('\ue100 \ue101 \ue2bf \ue102 \ue2be'),'\ue100\ue101，\ue102。');
+assert.equal(text.cleanText('El Psy Kongroo'),'El Psy Kongroo');assert.equal(text.cleanText('L a b'),'Lab');assert.equal(text.cleanText('I am so sorry. And you?'),'I am so sorry. And you?');
+assert.equal(text.cleanText('中文 Lab 中文'),'中文Lab中文');assert.equal(text.cleanText('“ 测试。 中文 ”'),'“测试。中文”');
+const graph=e.getGraph();let sample=null;
+for(const c of graph.nodes.n0.chunks){const chunk=JSON.parse(fs.readFileSync(path.join(src,'common/story',c.file)));for(let i=0;i<chunk.frames.length;i++){const frame=chunk.frames[i],clean=text.dialogueText(frame[1]);if(presentation.sentenceStops(clean).length>1){sample={frame,cursor:graph.nodes.n0.chunks.slice(0,graph.nodes.n0.chunks.indexOf(c)).reduce((a,x)=>a+x.count,0)+i};break;}}if(sample)break;}
+assert.ok(sample,'A real multiple-sentence source paragraph is required');
+function atSample(mode){ui._titleContext=false;ui._settings.textMode=mode;ui.autoEnabled=false;ui._state=e.newState('n0',true,sample.cursor);ui._state.lastCard=sample.frame[4];ui._cache=null;ui.present();assert.equal(ui.mode,'play');}
+atSample('sentence');const first=ui._typed,sourceCursor=ui._state.cursor;assert.ok(first<ui._wrapped.length);ui.advance();assert.equal(ui._state.cursor,sourceCursor);assert.ok(ui._typed>first);while(ui._sentenceIndex<ui._sentenceStops.length-1)ui.advance();ui.advance();assert.equal(ui._state.cursor,sourceCursor+1);
+atSample('instant');assert.equal(ui.lines.map(x=>x.text).join('\n'),ui._wrapped);assert.equal(ui._typeTimer,null);ui.advance();assert.equal(ui._state.cursor,sourceCursor+1);
+atSample('character');assert.ok(ui._typeTimer);ui.advance();assert.equal(ui._state.cursor,sourceCursor);assert.equal(ui._typeTimer,null);ui.advance();assert.equal(ui._state.cursor,sourceCursor+1);
+atSample('instant');ui._settings.autoSpeed=2;ui.autoEnabled=true;ui.armAuto();tick(3000);assert.ok(ui._state.cursor>sourceCursor);ui.showMenu();const paused=ui._state.cursor;tick(5000);assert.equal(ui._state.cursor,paused);assert.equal(ui.actions.length,9);assert.ok(ui.actions.some(x=>x.text.startsWith('文字显示：')));
+ui.autoEnabled=false;ui.toTitle();ui.openGallery();assert.equal(ui.galleryTop.length,2);assert.equal(ui.galleryBottom.length,2);assert.equal(new Set(ui.galleryTop.concat(ui.galleryBottom).map(x=>x.src)).size,4);assert.ok(!/\//.test(ui.galleryPageLabel));
+ui.viewCg(23);assert.ok(ui.cgLabel.includes('共 2 张'));const originalCg=ui.cgSrc;ui.cycleCg();assert.notEqual(ui.cgSrc,originalCg);ui.galleryBack();assert.equal(ui._galleryPage,5);assert.equal(ui.galleryTop[0].index,20);
+ui.openRoutes();ui.openChapters(0);assert.equal(ui._list.kind,'chapters');ui.listBack();assert.equal(ui._list.kind,'routes');assert.equal(ui._list.page,0);assert.equal(ui.rows[0].text,text.cleanText(graph.titles[0]));assert.ok(!/\//.test(ui.pageLabel));
+ui._titleContext=false;ui._state=e.newState('n0',true,591);ui._state.lastCard=0;ui.present();ui.showPhone();assert.equal(ui.phoneRows[0].text,'收信箱');assert.equal(ui.phoneRows[1].text,'已发送');assert.equal(ui.phoneRows[2].text,'联系人');ui.openInbox();assert.equal(ui._state.read.length,ui._state.inbox.length);
+const active=ui._state.inbox.find(x=>!x.stamp&&Math.floor(x.id/256)*256===2560);assert.ok(active);ui.openMessage(active);assert.equal(ui.phoneReplyLabel,'回复');ui.replyMessage();assert.equal(ui._phoneSection,'reply');const sentBefore=ui._state.sent.length;ui.sendRine(0);assert.ok(ui._state.sent.length>sentBefore);assert.ok(ui.phoneLines.some(x=>x.image&&x.image.includes('/phone-stamps/')));assert.ok(ui.phoneLines.some(x=>x.font==='sgoriginal'));assert.equal(ui._phoneSection,'detail');
+const sticker=ui._state.inbox.find(x=>x.stamp);ui.openMessage(sticker);assert.ok(ui.phoneLines.some(x=>x.image&&x.image.includes('/phone-stamps/')));assert.ok(!ui.phoneLines.some(x=>/表情 \d/.test(x.text)));
+ui.openInbox();ui._phoneCache=null;delayReads=true;ui.openMessage(active);ui.showPhone();const visible=JSON.stringify(ui.phoneRows);for(const work of pending.splice(0))work();delayReads=false;assert.equal(ui._phoneSection,'home');assert.equal(JSON.stringify(ui.phoneRows),visible);assert.equal(ui.loading,false);
+const conv=load(path.join(src,'common/conversations.js'));
+ui._state=e.newState('n0',true,243);ui.present();ui.showPhone();assert.equal(ui.phoneRows[0].meta,'有新信息');ui.openInbox();assert.ok(ui.phoneRows.some(x=>x.meta.includes('可回复')));ui.phonePick(0);assert.equal(ui.phoneRightLabel,'回复');ui.phoneRight();assert.equal(ui._phoneSection,'reply');assert.equal(ui.phoneRows.length,3);ui.sendRine(0);ui.showPhone();assert.equal(ui.phoneRows[0].meta,'有新信息');ui.openInbox();ui.showPhone();assert.match(ui.phoneRows[0].meta,/^\d+组-\d+条信息$/);
+ui._state=e.newState('n0',true,790);ui.present();ui.showPhone();ui.openInbox();ui.phonePick(0);ui.phoneRight();assert.equal(ui._phoneSection,'reply');assert.ok(ui.phoneRows.every(r=>r.image.includes('/phone-stamps/')));
+ui._state=e.newState('n0',true,270);ui.present();ui.showPhone();ui.openInbox();ui.phonePick(0);assert.equal(ui.phoneRightLabel,'继续剧情');assert.ok(ui.phoneLines.some(x=>x.text.includes('已过原作回复时机')));
+ui._state=e.newState('n0',true,596);ui.present();ui.showPhone();ui.openInbox();const threads=conv.mailboxThreads(ui._state,false);assert.equal(threads.length,2);assert.ok(threads.every(t=>t.messages.length===2));assert.ok(ui.phoneRows.every(x=>x.meta.includes('2条消息')));ui.openThread(threads[0]);assert.ok(ui.phoneLines.some(x=>x.image.endsWith('/13.png')));
+ui._state=e.newState('n0',true,924);ui.present();assert.equal(ui.amadeusVisible,true);assert.ok(ui.amadeusSrc.endsWith('.png'));assert.ok(conv.mailboxThreads(ui._state,false).some(t=>t.base===2304),'November 23 messages remain available on November 28');
+ui._state=e.newState('n0',true,9);ui.present();const oldSprite=ui._state.sceneLayers.find(x=>x[0].startsWith('p138_'));assert.ok(oldSprite);const replacement=load(path.join(src,'common/scene-presentation.js')).presentedLayer(oldSprite);assert.equal(replacement,oldSprite);assert.equal(replacement[0].split('_')[0],'p138');
+let longest=null;for(const [node,n] of Object.entries(graph.nodes))for(const event of n.events)if(event.type==='rineReply'){const record=JSON.parse(fs.readFileSync(path.join(src,'common/reply/'+event.key+'.txt')));for(let index=0;index<record.replies.length;index++)if(!longest||record.replies[index].sequence.length>longest.count)longest={node,event,index,count:record.replies[index].sequence.length};}
+ui._state=e.newState(longest.node,true,longest.event.at);ui.present();ui.showPhone();ui.openInbox();const firstMessage=ui._state.inbox.find(x=>x.base===longest.event.base);assert.ok(firstMessage);ui.openMessage(firstMessage);ui.replyMessage();ui.sendRine(longest.index);assert.ok(ui.phoneLines.filter(x=>x.image).length<=8);const all=conv.conversationMessages(ui._state,ui._thread);assert.ok(all.length>=longest.count);assert.equal(new Set(all.map(x=>x.order)).size,all.length);const pageCount=Math.ceil(all.length/8);for(let i=ui._threadPage+1;i<pageCount;i++)ui.phoneRight();assert.equal(ui._threadPage,pageCount-1);assert.ok(ui.phoneLines.filter(x=>x.image).length<=8);ui.phoneLeft();assert.equal(ui._threadPage,pageCount-2);
+const legacy=e.newState('n0',true,591);legacy.inbox=[{key:'old',id:2560,sender:2,contact:0,stamp:false,outgoing:false},{key:'stamp',id:13,sender:2,contact:0,stamp:true,outgoing:false}];const restored=e.restore(legacy);assert.equal(restored.inbox[1].base,2560);assert.equal(conv.mailboxThreads(restored,false).length,1);
+const critical=Object.entries(graph.nodes).find(([,n])=>n.choice&&n.choice.critical);ui._state=e.newState(critical[0],true,critical[1].count);ui.autoEnabled=true;ui.present();assert.equal(ui.mode,'choice');const choiceNode=ui._state.chapter;tick(10000);assert.equal(ui._state.chapter,choiceNode);assert.equal(ui.mode,'choice');
+
+// Follow-up pages acknowledge only their incoming rows, including the sent folder.
+ui._state=e.newState('n0',true,591);ui.present();ui.showPhone();ui.openInbox();ui.phonePick(0);ui.phoneRight();ui.sendRine(0);
+const target=ui._thread.base,totalPages=Math.ceil(conv.conversationMessages(ui._state,ui._thread).length/8);
+assert.ok(totalPages>1);assert.ok(ui._state.inbox.some(m=>m.base===target&&ui._state.read.indexOf(m.key)<0),'Unopened later page stays unread');
+const other={key:'new-other-conversation',id:2304,base:2304,date:101123,sender:1,contact:0,stamp:false,outgoing:false,order:++ui._state.mailSequence};ui._state.inbox.push(other);
+while(ui._threadPage<totalPages-1)ui.phoneRight();assert.ok(ui._state.inbox.filter(m=>m.base===target).every(m=>ui._state.read.includes(m.key)));
+assert.ok(!ui._state.read.includes(other.key),'Unrelated unread message must not be cleared');
+ui.phoneRight();assert.equal(ui.mode,'play');assert.equal(ui.phoneLabel,'有新 RINE');
+ui._state.inbox=ui._state.inbox.filter(m=>m.key!==other.key);ui.refreshNotice();assert.equal(ui.phoneLabel,'手机');
+const saved=e.restore(e.checkpoint(ui._state));assert.ok(saved.inbox.every(m=>saved.read.includes(m.key)));
+// A detail whose pending read was abandoned is never acknowledged.
+ui._state=e.newState('n0',true,591);ui.present();ui.showPhone();const pendingMessage=ui._state.inbox.find(m=>m.base===2560);ui._phoneSection='inbox';ui._phoneCache=null;delayReads=true;ui.openMessage(pendingMessage);ui.showPhone();for(const work of pending.splice(0))work();delayReads=false;assert.ok(!ui._state.read.includes(pendingMessage.key));
+
+ui.onHide();assert.equal(ui._typeTimer,null);assert.equal(ui._auto.pending(),false);ui.onDestroy();assert.ok(!logs.some(x=>x.startsWith('STEINS0_RW5 error')));
+// Same row objects/IDs across individual glyphs; no 60ms two-character bursts.
+ui._visible=true;atSample('character');const rowIds=ui.lines.map(x=>x.id),rowObjects=ui.lines.slice(),array=ui.lines,updates=ui._ui,initial=ui._typed;
+tick(29);assert.equal(ui._typed,initial);tick(1);assert.equal(ui._typed,initial+1);tick(30);assert.equal(ui._typed,initial+2);
+assert.equal(ui.lines,array);assert.deepEqual(ui.lines.map(x=>x.id),rowIds);assert.ok(ui.lines.every((row,i)=>row===rowObjects[i]));assert.equal(ui._ui,updates);
+const full=ui._wrapped;while(ui._typeTimer)tick(30);assert.equal(ui.lines.map(x=>x.text).join('\n'),full);assert.equal(ui._typed,full.length);assert.equal(ui._ui,updates);
+atSample('character');const interrupted=timers.get(ui._typeTimer).fn;ui.showMenu();const oldText=ui.lines.map(x=>x.text).join('\n');interrupted();assert.equal(ui.lines.map(x=>x.text).join('\n'),oldText);assert.equal(ui._typeTimer,null);
+const reveal=load(path.join(src,'common/text-reveal.js'));assert.equal(reveal.nextGlyphEnd('\n😀A',0),3);assert.equal(reveal.nextGlyphEnd('\n😀A',3),4);
+ui.onHide();ui.onDestroy();
+const report={result:'passed',sourceSentence:sample.frame[5],threeFontSizesAndLegacyMigration:true,characterSentenceInstantAdvance:true,chineseSpacingAndEnglishWords:true,menuNineItems:true,fourGalleryGroupsPerPage:true,variantAndReturnPage:true,routeFirstPageRefresh:true,phoneInboxSentContacts:true,replyDisplaysOriginalConversation:true,stampImagesInsideThreads:true,twoMessageMailboxGrouping:true,pastDateMessagesRetained:true,longestOriginalReplyMessages:longest.count,maximumMessagesPerDetailPage:8,legacyMailMetadataMigration:true,amadeusPhonePortrait:true,originalScriptCostumeAndPlacement:true,staleAsyncMessageReadIgnored:true,autoPausesOnMenuAndCriticalChoice:true,backgroundTimersCancelled:true};
+Object.assign(report,{stableRowIdsObjectsAndArray:true,oneGlyphPer30ms:true,noRebuildPerGlyph:true,staleTypingCallbacksIgnored:true,surrogatePairsAndNewlineHandled:true,renderedFollowupsMarkedRead:true,unopenedPagesAndOtherThreadsStayUnread:true,staleReadNeverAcknowledged:true,readStateSurvivesRestore:true,mailboxUnreadAndCounts:true,replyViaBottomButton:true,replyAvailabilityInMailbox:true,originalStickerChoicesVisible:true,expiredReplyExplained:true});fs.writeFileSync(path.join(R,'reports/ui-v015-tests.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));

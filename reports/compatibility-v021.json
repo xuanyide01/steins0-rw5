@@ -1,0 +1,32 @@
+{
+  "result": "passed",
+  "version": "0.2.1",
+  "changedPackageFiles": [
+    "META-INF/CERT",
+    "manifest-watch.json",
+    "manifest.json",
+    "app.js",
+    "pages/index/index.js",
+    "META-INF/build.txt"
+  ],
+  "changedSourceFiles": [
+    "src/common/engine.js",
+    "src/config-watch.json",
+    "src/manifest.json",
+    "src/pages/index/index.ux"
+  ],
+  "allRuntimeCommonBytesExactWith020": true,
+  "commonFilesCompared": 2762,
+  "storyBlocksIdentical": 853,
+  "graphAndPhoneDataUnchanged": true,
+  "opImagesAudioFontsUnchanged": true,
+  "deflatedFiles": 45,
+  "storedFiles": 2723,
+  "largestDeflatedFileBytes": 250478,
+  "binaryFilesAllStored": true,
+  "sameCertificateAndPackageName": true,
+  "saveOuterVersion": 2,
+  "stateVersion": 3,
+  "slots": 30,
+  "physicalDeviceTested": false
+}
