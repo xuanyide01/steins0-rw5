@@ -1,9 +1,0 @@
-{
-  "result": "passed",
-  "simulatedMilliseconds": 4030860,
-  "plays": 15,
-  "stops": 15,
-  "maximumOwnedStreams": 1,
-  "noTimersAfterStopOrDestroy": true,
-  "nativeLoopTestSeparate": true
-}

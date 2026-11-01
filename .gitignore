@@ -1,9 +1,0 @@
-node_modules/
-build/
-dist/
-.emulator/
-__pycache__/
-*.pyc
-*.log
-reports/build-only-assets-*.txt
-reports/title-capture-v021/

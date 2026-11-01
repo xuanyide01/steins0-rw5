@@ -1,8 +1,0 @@
-{
-  "result": "passed",
-  "slowFrameReferenceFixtures": 108,
-  "criticalChoicesProtected": 11,
-  "prologueSkipsToFirstChapterAt934": true,
-  "oneStepBackRestoresPreSkip": true,
-  "allSixEndingsReachableByChapterJumps": true
-}
